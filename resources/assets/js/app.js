@@ -9,6 +9,11 @@ require('./bootstrap');
 
 window.Vue = require('vue');
 import Vue from 'vue'
+import Toaster from 'v-toaster'
+import 'v-toaster/dist/v-toaster.css'
+
+Vue.use(Toaster, {timeout: 5000})
+
 import VueChatScroll from 'vue-chat-scroll'
 Vue.use(VueChatScroll)
 /**
@@ -29,7 +34,8 @@ const app = new Vue({
             color:[],
             time:[]
     	},
-        typing:''
+        typing:'',
+        numberOfUsers:0
     },
     watch:{
         message(){
@@ -82,6 +88,21 @@ const app = new Vue({
                 this.typing = '';
             }
         //console.log(e.name);
-    });
+        });
+        Echo.join(`chat`)
+            .here((users) => {
+                this.numberOfUsers = users.length;
+                //console.log(users);
+            })
+            .joining((user) => {
+                this.numberOfUsers += 1;
+                this.$toaster.success(user.name+' is joined the chat room');
+                //console.log(user.name);
+            })
+            .leaving((user) => {
+                this.numberOfUsers -= 1;
+                this.$toaster.warning(user.name+' is leaved the chat room');
+                //console.log(user.name);
+        });
     }
 });
